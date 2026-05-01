@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>nectar-sql</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" integrity="sha512-uf06llspW44/LZpHzHT6qBOIVODjWtv4MxCricRxkzvopAlSWnTf6hpZTFxuuZcuNE9CBQhqE0Seu1CoRk84nQ==" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css" integrity="sha512-2OhXH4Il3n2tHKwLLSDPhrkgnLBC+6lHGGQzSFi3chgVB6DJ/v6+nbx+XYO9CugQyHVF/8D/0k3Hx1eaUK2K9g==" crossorigin="anonymous" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header>
+    <div class="logo">
+      <span class="logo-icon">🍯</span>
+      <span class="logo-text">nectar-sql</span>
+    </div>
+    <p class="tagline">Converts raw SQL into <a href="https://github.com/seancorfield/honeysql" target="_blank">HoneySQL</a></p>
+  </header>
+
+  <main>
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <label for="examples" class="sr-only">Load example</label>
+        <select id="examples">
+          <option value="">Load an example…</option>
+          <option value="simple-select">Simple SELECT</option>
+          <option value="select-join">SELECT with JOIN</option>
+          <option value="select-aggregate">SELECT with aggregate</option>
+          <option value="insert">INSERT</option>
+        </select>
+      </div>
+      <div class="toolbar-right">
+        <span class="hint">Supports SELECT and INSERT queries</span>
+        <button id="convert-btn">Convert <kbd>⌘↵</kbd></button>
+      </div>
+    </div>
+
+    <div class="panes">
+      <div class="pane">
+        <div class="pane-header">
+          <span>SQL</span>
+        </div>
+        <div id="sql-editor"></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="pane">
+        <div class="pane-header">
+          <span>HoneySQL</span>
+          <button id="copy-btn" class="copy-btn" title="Copy to clipboard">Copy</button>
+        </div>
+        <div id="honeysql-editor"></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js" integrity="sha512-OeZ4Yrb/W7d2W4rAMOO0HQ9Ro/aWLtpW9BUSR2UOWnSV2hprXLkkYnnCGc9NeLUxxE4ZG7zN16UuT1Elqq8Opg==" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js" integrity="sha512-TZji/E4or1ciET62zt9IgnfFJPkMqV4EhZ8AfiRVZeq+yxCT5O+PomM7nkfttOwX/ckDwjPzevAUhKvXnHl7MA==" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clojure/clojure.min.js" integrity="sha512-11bCi6z5ZAiuzJK1+w20ucw1iea2cXkMF2E6oTyIPYTne3dn9f1MTE/UiLY4b49vNDDZysAXYncxu/KJrHQXuA==" crossorigin="anonymous"></script>
+  <script src="app.js"></script>
+</body>
+</html>

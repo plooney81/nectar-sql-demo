@@ -1,0 +1,20 @@
+# Build output
+target/
+
+# Clojure tooling caches
+.cpcache/
+.clj-kondo/.cache/
+.lsp/
+.calva/
+.nrepl-port
+
+# macOS
+.DS_Store
+
+# Editor
+.idea/
+*.iml
+.vscode/
+
+# Fly.io
+fly.toml.bak

@@ -1,0 +1,286 @@
+/* ── Google Fonts ─────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600&family=DM+Mono:wght@500&display=swap');
+
+/* ── Reset & Base ─────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* Scour palette */
+  --void:      #0e0b1a;
+  --deep:      #160f2e;
+  --dusk:      #2a1f4a;
+  --scour:     #9d7eff;
+  --lavender:  #c4aaff;
+  --frost:     #f0ecff;
+  --cleared:   #5dcaa5;
+
+  /* Semantic aliases */
+  --bg:        var(--void);
+  --surface:   var(--deep);
+  --surface-2: var(--dusk);
+  --accent:    var(--scour);
+  --accent-lt: var(--lavender);
+  --success:   var(--cleared);
+  --text:      var(--frost);
+  --text-muted: #7a6f99;
+  --error:     #e05577;
+  --error-bg:  #1e0a14;
+  --border:    rgba(157, 126, 255, 0.15);
+  --radius:    6px;
+
+  --font-sans: "Outfit", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "DM Mono", "JetBrains Mono", "Fira Code", monospace;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── Header ───────────────────────────────────────────────────────────────── */
+header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.logo-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.logo-text {
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--accent);
+  letter-spacing: -0.01em;
+}
+
+.tagline {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+}
+
+.tagline a {
+  color: var(--lavender);
+  text-decoration: none;
+}
+.tagline a:hover { color: var(--frost); }
+
+/* ── Toolbar ──────────────────────────────────────────────────────────────── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 1.5rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.toolbar-left, .toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+select#examples {
+  background: var(--surface-2);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.35rem 0.6rem;
+  font-size: 0.82rem;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+select#examples:focus {
+  outline: none;
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.hint {
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
+}
+
+#convert-btn {
+  background: var(--accent);
+  color: var(--void);
+  border: none;
+  border-radius: var(--radius);
+  padding: 0.4rem 1.1rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+#convert-btn:hover {
+  background: var(--lavender);
+  box-shadow: 0 0 16px rgba(157, 126, 255, 0.35);
+}
+
+#convert-btn:active {
+  background: var(--scour);
+  box-shadow: none;
+}
+
+#convert-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+kbd {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 3px;
+  padding: 0.1rem 0.3rem;
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  color: var(--deep);
+}
+
+/* ── Panes ────────────────────────────────────────────────────────────────── */
+main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.panes {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.pane {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.divider {
+  width: 1px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.pane-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 1rem;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.copy-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: var(--radius);
+  padding: 0.2rem 0.65rem;
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.03em;
+}
+
+.copy-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.copy-btn.copied {
+  border-color: var(--cleared);
+  color: var(--cleared);
+}
+
+/* ── CodeMirror overrides ─────────────────────────────────────────────────── */
+.CodeMirror {
+  height: 100% !important;
+  font-family: var(--font-mono) !important;
+  font-size: 0.88rem !important;
+  line-height: 1.65 !important;
+  background: var(--bg) !important;
+}
+
+.CodeMirror-gutters {
+  background: var(--surface) !important;
+  border-right: 1px solid var(--border) !important;
+}
+
+.CodeMirror-linenumber {
+  color: var(--text-muted) !important;
+}
+
+#sql-editor,
+#honeysql-editor {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+#sql-editor .CodeMirror,
+#honeysql-editor .CodeMirror {
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+}
+
+/* Error state on output pane */
+.pane.has-error .pane-header {
+  color: var(--error);
+  border-bottom-color: var(--error);
+}
+
+.pane.has-error .CodeMirror {
+  background: var(--error-bg) !important;
+}
+
+/* ── Accessibility ────────────────────────────────────────────────────────── */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
