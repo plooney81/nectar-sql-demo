@@ -57,7 +57,10 @@ header {
   display: flex;
   align-items: center;
   gap: 0.6rem;
+  text-decoration: none;
 }
+
+.logo:hover .logo-text { color: var(--lavender); }
 
 .logo-icon {
   font-size: 1.3rem;
@@ -84,6 +87,20 @@ header {
   text-decoration: none;
 }
 .tagline a:hover { color: var(--frost); }
+
+.github-link {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: auto;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  transition: color 0.15s;
+}
+
+.github-link:hover { color: var(--frost); }
 
 /* ── Toolbar ──────────────────────────────────────────────────────────────── */
 .toolbar {
