@@ -16,6 +16,15 @@
 (def ^:private rate-limit     30)   ; requests per window
 (def ^:private rate-window-ms 60000) ; 1 minute
 
+(def ^:private nsql-version
+  (try
+    (let [props (doto (java.util.Properties.)
+                  (.load (.getResourceAsStream
+                           (ClassLoader/getSystemClassLoader)
+                           "META-INF/maven/com.github.plooney81/nectar-sql/pom.properties")))]
+      (.getProperty props "version"))
+    (catch Exception _ "unknown")))
+
 ;; ── Rate limiting (in-memory sliding window per IP) ───────────────────────────
 
 (def ^:private request-log (atom {}))
@@ -117,7 +126,7 @@
 
   (GET "/health" []
     {:status 200
-     :body   {"status" "ok"}})
+     :body   {"status" "ok" "nectar-sql-version" nsql-version}})
 
   (POST "/api/convert" req
     (convert-handler req))

@@ -125,5 +125,14 @@ document.getElementById("copy-btn").addEventListener("click", () => {
   });
 });
 
+/* ── Library version ─────────────────────────────────────────────────────── */
+fetch("/health")
+  .then((r) => r.json())
+  .then((data) => {
+    const v = data["nectar-sql-version"];
+    if (v) document.getElementById("lib-version").textContent = `v${v}`;
+  })
+  .catch(() => {});
+
 /* ── Init ────────────────────────────────────────────────────────────────── */
 window.addEventListener("load", loadFromHash);
