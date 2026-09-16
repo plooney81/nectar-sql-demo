@@ -75,14 +75,22 @@
        "frame-ancestors 'none'; "
        "base-uri 'self'"))
 
+(def ^:private permissions-policy
+  (str/join ", " (map #(str % "=()")
+                      ["accelerometer" "camera" "geolocation" "gyroscope"
+                       "magnetometer" "microphone" "payment" "usb"
+                       "browsing-topics"])))
+
 (defn- wrap-security-headers [handler]
   (fn [req]
     (let [resp (handler req)]
       (update resp :headers merge
-              {"X-Content-Type-Options" "nosniff"
-               "X-Frame-Options"        "DENY"
-               "Referrer-Policy"        "strict-origin-when-cross-origin"
-               "Content-Security-Policy" csp}))))
+              {"X-Content-Type-Options"    "nosniff"
+               "X-Frame-Options"           "DENY"
+               "Referrer-Policy"           "strict-origin-when-cross-origin"
+               "Content-Security-Policy"   csp
+               "Strict-Transport-Security" "max-age=31536000; includeSubDomains"
+               "Permissions-Policy"        permissions-policy}))))
 
 ;; ── Rate limit middleware ─────────────────────────────────────────────────────
 
