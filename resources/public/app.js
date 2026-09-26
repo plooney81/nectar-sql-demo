@@ -18,8 +18,36 @@ const EXAMPLES = {
 HAVING COUNT(*) > 5
  ORDER BY avg_salary DESC`,
 
+  "select-cte": `WITH big_spenders AS (
+  SELECT customer_id, SUM(total) AS spent
+    FROM orders
+   GROUP BY customer_id
+  HAVING SUM(total) > 1000
+)
+SELECT c.name, b.spent
+  FROM customers c
+  JOIN big_spenders b ON b.customer_id = c.id
+ WHERE c.id IN (SELECT customer_id FROM subscriptions WHERE active = true)
+   AND c.region = 'US'
+ ORDER BY b.spent DESC`,
+
   "insert": `INSERT INTO users (name, email, role)
 VALUES ('Pete', 'pete@example.com', 'admin')`,
+
+  "insert-select": `INSERT INTO archived_orders (id, customer_id, total)
+SELECT id, customer_id, total
+  FROM orders
+ WHERE created_at < '2024-01-01'`,
+
+  "update": `UPDATE employees
+   SET salary = salary * 1.05,
+       updated_at = CURRENT_TIMESTAMP
+ WHERE department = 'engineering'
+   AND active = true`,
+
+  "delete": `DELETE FROM sessions
+ WHERE expires_at < CURRENT_TIMESTAMP
+    OR user_id IN (SELECT id FROM users WHERE banned = true)`,
 };
 
 /* ── CodeMirror Setup ────────────────────────────────────────────────────── */
@@ -45,6 +73,70 @@ const honeyEditor = CodeMirror(document.getElementById("honeysql-editor"), {
   cursorBlinkRate: -1, // hide cursor in read-only
 });
 
+/* ── Output Views (Data map | Helpers) ───────────────────────────────────── */
+const VIEWS = ["map", "helpers"];
+const VIEW_STORAGE_KEY = "nectar-sql:view";
+const tabs = document.querySelectorAll('[role="tab"]');
+
+// The latest output for each view; the editor shows the active one.
+let outputs = { map: "", helpers: "" };
+let currentView = initialView();
+
+function initialView() {
+  const fromUrl = new URLSearchParams(window.location.search).get("view");
+  if (VIEWS.includes(fromUrl)) return fromUrl;
+  try {
+    const stored = localStorage.getItem(VIEW_STORAGE_KEY);
+    if (VIEWS.includes(stored)) return stored;
+  } catch (_) {
+    // storage unavailable (private mode, blocked site data) — use the default
+  }
+  return "map";
+}
+
+function renderOutput() {
+  honeyEditor.setValue(outputs[currentView]);
+}
+
+function setView(view) {
+  currentView = view;
+
+  tabs.forEach((tab) => {
+    const selected = tab.dataset.view === view;
+    tab.setAttribute("aria-selected", String(selected));
+    tab.tabIndex = selected ? 0 : -1;
+    if (selected) {
+      document.getElementById("honeysql-editor").setAttribute("aria-labelledby", tab.id);
+    }
+  });
+
+  // `?view=helpers` makes shared links open on the same tab. The SQL stays in
+  // the hash, so links from before the tabs existed still work.
+  const url = new URL(window.location.href);
+  if (view === "map") url.searchParams.delete("view");
+  else url.searchParams.set("view", view);
+  history.replaceState(null, "", url);
+
+  try {
+    localStorage.setItem(VIEW_STORAGE_KEY, view);
+  } catch (_) {
+    // storage unavailable — the URL still carries the view
+  }
+
+  renderOutput();
+}
+
+tabs.forEach((tab, i) => {
+  tab.addEventListener("click", () => setView(tab.dataset.view));
+  // Arrow keys move between tabs, per the WAI-ARIA tabs pattern
+  tab.addEventListener("keydown", (e) => {
+    if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+    const next = tabs[(i + (e.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length];
+    setView(next.dataset.view);
+    next.focus();
+  });
+});
+
 /* ── Conversion ──────────────────────────────────────────────────────────── */
 async function convert() {
   const sql = sqlEditor.getValue().trim();
@@ -67,17 +159,25 @@ async function convert() {
     const data = await res.json();
 
     if (res.ok) {
-      honeyEditor.setValue(data.honeysql);
+      outputs = {
+        map:     data.honeysql,
+        helpers: data.helpers ?? ";; Helper output isn't available",
+      };
+      renderOutput();
       // Shareable link via URL hash
       window.location.hash = encodeURIComponent(sql);
     } else {
       outputPane.classList.add("has-error");
-      honeyEditor.setValue(`;; Error\n;; ${data.error}`);
+      const message = `;; Error\n;; ${data.error}`;
+      outputs = { map: message, helpers: message };
+      renderOutput();
       window.location.hash = "";
     }
   } catch (err) {
     outputPane.classList.add("has-error");
-    honeyEditor.setValue(`;; Network error\n;; ${err.message}`);
+    const message = `;; Network error\n;; ${err.message}`;
+    outputs = { map: message, helpers: message };
+    renderOutput();
   } finally {
     convertBtn.innerHTML = "Convert <kbd>⌘↵</kbd>";
     convertBtn.disabled = false;
@@ -135,4 +235,5 @@ fetch("/health")
   .catch(() => {});
 
 /* ── Init ────────────────────────────────────────────────────────────────── */
+setView(currentView);
 window.addEventListener("load", loadFromHash);

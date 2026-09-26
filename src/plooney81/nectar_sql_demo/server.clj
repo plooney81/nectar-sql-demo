@@ -104,6 +104,17 @@
 
 ;; ── Handlers ──────────────────────────────────────────────────────────────────
 
+(defn- ripen-both
+  "Ripens `sql` into both the HoneySQL map and the helper-function output. If
+   only the helper conversion fails, the map is still returned, with the failure
+   noted in place of the helpers. If the SQL itself can't be converted, throws."
+  [sql]
+  (try
+    (nsql/ripen sql {:output :both})
+    (catch Exception e
+      {:map  (nsql/ripen sql)
+       :text (str ";; Helper output isn't available for this query\n;; " (.getMessage e))})))
+
 (defn convert-handler [req]
   (let [sql (get-in req [:body "sql"])]
     (cond
@@ -118,8 +129,10 @@
 
       :else
       (try
-        {:status 200
-         :body   {"honeysql" (with-out-str (pprint (nsql/ripen sql)))}}
+        (let [result (ripen-both sql)]
+          {:status 200
+           :body   {"honeysql" (with-out-str (pprint (:map result)))
+                    "helpers"  (:text result)}})
         (catch Exception e
           {:status 400
            :body   {"error" (.getMessage e)}})))))
@@ -136,8 +149,9 @@
     {:status 200
      :body   {"status" "ok" "nectar-sql-version" nsql-version}})
 
+  ;; Only conversions are rate limited; page assets and /health are not
   (POST "/api/convert" req
-    (convert-handler req))
+    ((wrap-rate-limit convert-handler) req))
 
   (route/not-found
     {:status 404
@@ -147,11 +161,13 @@
 
 (def app
   (-> app-routes
-      (wrap-resource "public")
-      wrap-content-type
       (wrap-json-body {:keywords? false})
       wrap-json-response
-      wrap-rate-limit
+      ;; Outside the JSON middleware, so wrap-content-type only types static files.
+      ;; Inside it, extensionless API routes were typed application/octet-stream
+      ;; before wrap-json-response could set application/json.
+      (wrap-resource "public")
+      wrap-content-type
       wrap-security-headers))
 
 ;; ── Entry point ───────────────────────────────────────────────────────────────

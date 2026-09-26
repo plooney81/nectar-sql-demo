@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>nectar-sql</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" integrity="sha512-uf06llspW44/LZpHzHT6qBOIVODjWtv4MxCricRxkzvopAlSWnTf6hpZTFxuuZcuNE9CBQhqE0Seu1CoRk84nQ==" crossorigin="anonymous" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css" integrity="sha512-2OhXH4Il3n2tHKwLLSDPhrkgnLBC+6lHGGQzSFi3chgVB6DJ/v6+nbx+XYO9CugQyHVF/8D/0k3Hx1eaUK2K9g==" crossorigin="anonymous" />
   <link rel="stylesheet" href="style.css" />
@@ -36,10 +37,22 @@
         <label for="examples" class="sr-only">Load example</label>
         <select id="examples">
           <option value="">Load an example…</option>
-          <option value="simple-select">Simple SELECT</option>
-          <option value="select-join">SELECT with JOIN</option>
-          <option value="select-aggregate">SELECT with aggregate</option>
-          <option value="insert">INSERT</option>
+          <optgroup label="SELECT">
+            <option value="simple-select">Simple SELECT</option>
+            <option value="select-join">SELECT with JOIN</option>
+            <option value="select-aggregate">SELECT with aggregate</option>
+            <option value="select-cte">SELECT with CTE and subquery</option>
+          </optgroup>
+          <optgroup label="INSERT">
+            <option value="insert">INSERT values</option>
+            <option value="insert-select">INSERT … SELECT</option>
+          </optgroup>
+          <optgroup label="UPDATE">
+            <option value="update">UPDATE with expressions</option>
+          </optgroup>
+          <optgroup label="DELETE">
+            <option value="delete">DELETE with subquery</option>
+          </optgroup>
         </select>
       </div>
       <div class="toolbar-right">
@@ -60,10 +73,15 @@
 
       <div class="pane">
         <div class="pane-header">
-          <span>HoneySQL</span>
+          <div class="tabs" role="tablist" aria-label="HoneySQL output format">
+            <button type="button" role="tab" id="tab-map" class="tab" data-view="map"
+                    aria-selected="true" aria-controls="honeysql-editor">Data map</button>
+            <button type="button" role="tab" id="tab-helpers" class="tab" data-view="helpers"
+                    aria-selected="false" aria-controls="honeysql-editor" tabindex="-1">Helpers</button>
+          </div>
           <button id="copy-btn" class="copy-btn" title="Copy to clipboard">Copy</button>
         </div>
-        <div id="honeysql-editor"></div>
+        <div id="honeysql-editor" role="tabpanel" aria-labelledby="tab-map"></div>
       </div>
     </div>
   </main>
