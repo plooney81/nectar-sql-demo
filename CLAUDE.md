@@ -106,6 +106,9 @@ response is still 200 and `helpers` holds a `;;` comment explaining why (see `ri
     (wrap-resource "public")   ; serves resources/public/*
     wrap-content-type          ; types static files only; inside the JSON middleware it would
                                ; mark extensionless API routes application/octet-stream
+    wrap-not-modified          ; 304 for unchanged files (If-Modified-Since / Last-Modified)
+    wrap-revalidate            ; Cache-Control: no-cache, so browsers never mix an old
+                               ; app.js/style.css with a new index.html after a deploy
     wrap-security-headers)
 ```
 
