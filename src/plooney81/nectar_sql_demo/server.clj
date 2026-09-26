@@ -5,6 +5,7 @@
             [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
             [ring.middleware.resource :refer [wrap-resource]]
             [ring.middleware.content-type :refer [wrap-content-type]]
+            [ring.middleware.not-modified :refer [wrap-not-modified]]
             [clojure.pprint :refer [pprint]]
             [clojure.string :as str]
             [plooney81.nectar.sql :as nsql])
@@ -92,6 +93,17 @@
                "Strict-Transport-Security" "max-age=31536000; includeSubDomains"
                "Permissions-Policy"        permissions-policy}))))
 
+;; ── Caching middleware ────────────────────────────────────────────────────────
+
+(defn- wrap-revalidate [handler]
+  ;; Without Cache-Control, browsers guess how long a file stays fresh from its
+  ;; Last-Modified age, so after a deploy they can keep serving an old app.js or
+  ;; style.css against a new index.html. `no-cache` makes them revalidate every
+  ;; load; wrap-not-modified answers unchanged files with a 304.
+  (fn [req]
+    (when-let [resp (handler req)]
+      (update resp :headers #(merge {"Cache-Control" "no-cache"} %)))))
+
 ;; ── Rate limit middleware ─────────────────────────────────────────────────────
 
 (defn- wrap-rate-limit [handler]
@@ -168,6 +180,8 @@
       ;; before wrap-json-response could set application/json.
       (wrap-resource "public")
       wrap-content-type
+      wrap-not-modified
+      wrap-revalidate
       wrap-security-headers))
 
 ;; ── Entry point ───────────────────────────────────────────────────────────────
