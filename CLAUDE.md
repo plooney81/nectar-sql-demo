@@ -9,9 +9,11 @@ Fly.io as a single container.
 **Repo:** https://github.com/plooney81/nectar-sql
 **Library ns:** `plooney81.nectar.sql`
 **Core fn:** `(nsql/ripen "SELECT * FROM foo")` → returns a Clojure map (HoneySQL format)
+**Helper output:** `(nsql/ripen sql {:output :both})` → `{:map … :form … :text …}` from one parse,
+where `:text` is the query as a pretty-printed `honey.sql.helpers` `->` chain (nectar-sql ≥ 1.0.34)
 
-The library currently supports **SELECT and INSERT** queries only. UPDATE/DELETE are not
-yet supported and will throw. The UI must communicate this limitation clearly.
+The library supports **SELECT, INSERT, UPDATE, and DELETE** queries. Anything else throws,
+and the UI shows the error message.
 
 ---
 
@@ -55,7 +57,8 @@ nectar-sql-site/
     └── public/
         ├── index.html                ← NEW: split-pane UI
         ├── style.css                 ← NEW: styles
-        └── app.js                    ← NEW: fetch logic + CodeMirror wiring
+        ├── app.js                    ← NEW: fetch logic + CodeMirror wiring
+        └── favicon.svg               ← 🍯 emoji favicon, matches the header logo
 ```
 
 ---
@@ -79,7 +82,10 @@ nectar-sql-site/
 
 **Success (200):**
 ```json
-{ "honeysql": "{:select [:*], :from [:people], :where [:> :age 25]}" }
+{
+  "honeysql": "{:select [:*], :from [:people], :where [:> :age 25]}",
+  "helpers":  ";; (:require [honey.sql.helpers :as h])\n(-> (h/select :*) (h/from :people) (h/where [:> :age 25]))"
+}
 ```
 
 **Error (400):**
@@ -87,17 +93,24 @@ nectar-sql-site/
 { "error": "JSqlParser error message here" }
 ```
 
-The `honeysql` value is a **pretty-printed EDN string** via `(with-out-str (pprint result))`.
+The `honeysql` value is a **pretty-printed EDN string** via `(with-out-str (pprint (:map result)))`.
+The `helpers` value is the library's `:text` as-is. If only the helper conversion fails, the
+response is still 200 and `helpers` holds a `;;` comment explaining why (see `ripen-both`).
 
 ### Middleware Stack (order matters)
 
 ```clojure
 (-> app-routes
-    (wrap-resource "public")   ; serves resources/public/*
-    wrap-content-type
     (wrap-json-body {:keywords? false})
-    wrap-json-response)
+    wrap-json-response         ; API routes → application/json
+    (wrap-resource "public")   ; serves resources/public/*
+    wrap-content-type          ; types static files only; inside the JSON middleware it would
+                               ; mark extensionless API routes application/octet-stream
+    wrap-security-headers)
 ```
+
+Rate limiting (30 req/min per IP) wraps only the `POST /api/convert` handler, so page
+assets and `/health` don't count toward it. The 429 body is JSON like every other API error.
 
 ### Port Config
 
@@ -114,16 +127,17 @@ Read from `PORT` env var, default `8080`:
 
 Two equal-width panes, side by side:
 - **Left pane:** SQL input — CodeMirror editor (SQL mode, via CDN)
-- **Right pane:** Read-only HoneySQL output — CodeMirror editor (Clojure mode, via CDN)
+- **Right pane:** Read-only HoneySQL output — CodeMirror editor (Clojure mode, via CDN), with
+  **`Data map | Helpers`** tabs in its header (`role="tablist"`, arrow keys switch tabs)
 
 ### Behavior
 
 - "Convert" button triggers `POST /api/convert`
 - Also support **Cmd/Ctrl+Enter** keyboard shortcut to convert
-- On success: populate right pane with the `honeysql` string
-- On error: display the `error` string in the right pane with a red/error style
-- "Copy" button on the output pane copies to clipboard
-- A small info note below the input: *"Supports SELECT and INSERT queries"*
+- On success: keep both `honeysql` and `helpers` strings; the right pane shows the active tab's
+- On error: display the `error` string in the right pane (on both tabs) with a red/error style
+- "Copy" button on the output pane copies the active tab's output to clipboard
+- A small info note in the toolbar: *"Supports SELECT, INSERT, UPDATE, and DELETE queries"*
 
 ### CodeMirror (CDN)
 
@@ -143,14 +157,19 @@ window.location.hash = encodeURIComponent(sqlValue);
 // On load: read hash and pre-populate + auto-convert if present
 ```
 
+The selected output tab is kept in a `?view=helpers` query param (via `history.replaceState`;
+omitted for the default `map` view), so shared links open on the same tab. Without the param,
+the last-used tab is restored from `localStorage`. The SQL stays in the hash, so older links
+still work.
+
 ### Sample Queries Dropdown
 
-Include a `<select>` dropdown with 3-4 example queries that populate the input pane.
-Suggested examples:
-1. Simple SELECT with WHERE
-2. SELECT with JOIN
-3. SELECT with aggregate (COUNT/GROUP BY)
-4. INSERT
+Include a `<select>` dropdown of example queries that populate the input pane, grouped
+with `<optgroup>` by statement type. Keep at least one example per supported statement:
+1. SELECT: simple WHERE, JOIN, aggregate (COUNT/GROUP BY/HAVING), CTE + subquery (nested helper chains)
+2. INSERT: VALUES, INSERT … SELECT
+3. UPDATE: multi-column SET with expressions
+4. DELETE: WHERE with a subquery
 
 ---
 
@@ -231,6 +250,7 @@ compojure/compojure      {:mvn/version "1.7.1"}
 
 ## Known Constraints
 
-- `nsql/ripen` throws on unsupported SQL (UPDATE, DELETE, etc.) — catch and return 400
+- `nsql/ripen` throws on unsupported SQL — catch and return 400
 - JSqlParser doesn't support Postgres implicit casting — surface the error message as-is
 - The library returns a Clojure map; use `clojure.pprint/pprint` to produce readable EDN
+- The helper `:text` is already pretty-printed by the library; don't re-format it

@@ -215,7 +215,10 @@ main {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.4rem 1rem;
+  /* Fixed height, so the SQL header (text only) and the output header (tabs and
+     Copy button) line up regardless of their contents */
+  height: 2.5rem;
+  padding: 0 1rem;
   background: var(--surface-2);
   border-bottom: 1px solid var(--border);
   font-family: var(--font-mono);
@@ -226,6 +229,40 @@ main {
   color: var(--text-muted);
   flex-shrink: 0;
 }
+
+/* ── Output tabs ──────────────────────────────────────────────────────────── */
+.tabs {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.tab {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  padding: 0.2rem 0.65rem;
+  font: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.tab:hover { color: var(--text); }
+
+.tab[aria-selected="true"] {
+  color: var(--accent);
+  border-color: var(--border);
+  background: var(--bg);
+}
+
+.tab:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.pane.has-error .tab[aria-selected="true"] { color: var(--error); }
 
 .copy-btn {
   background: transparent;

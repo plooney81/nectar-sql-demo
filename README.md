@@ -1,6 +1,6 @@
 # nectar-sql demo
 
-A split-pane web UI that converts raw SQL into [HoneySQL](https://github.com/seancorfield/honeysql) — powered by the [nectar-sql](https://github.com/plooney81/nectar-sql) Clojure library.
+A split-pane web UI that converts raw SQL into [HoneySQL](https://github.com/seancorfield/honeysql), as a data map or as `honey.sql.helpers` code — powered by the [nectar-sql](https://github.com/plooney81/nectar-sql) Clojure library.
 
 **Supports:** `SELECT` and `INSERT` queries. `UPDATE`/`DELETE` are not yet supported by the underlying library.
 
@@ -55,7 +55,7 @@ The app targets region `dfw` (Dallas) on a `shared-cpu-1x` / 512 MB VM with auto
 ```
 Browser
   └── GET /           → serves index.html (Ring wrap-resource)
-  └── POST /api/convert → (nsql/ripen sql) → HoneySQL EDN as JSON
+  └── POST /api/convert → (nsql/ripen sql {:output :both}) → data map + helper code as JSON
   └── GET /health     → {"status": "ok"}
 ```
 
